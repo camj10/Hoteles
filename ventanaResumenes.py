@@ -17,6 +17,20 @@ def ventanaMostrarRes():
     frmRS = tk.Toplevel(border=2,padx=15,pady=15)
     frmRS.grid()
 #Funciones de la ventana
+    def Seleccioncombo(event):
+        print(combobox.get())
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT costo,dias FROM reserva WHERE tipo=%s AND estado=1",[combobox.get()])
+        filas=mycursor.fetchall()
+        totald=0
+        totali=0
+        print(filas)
+        for fila in filas:
+            totald=totald+fila[1]
+            totali=totali+fila[0]
+        print(totali,totald)
+        tabla.insert("",tk.END,values=(combobox.get(),totald,totali))
+
     def CargarCombox():
         mycursor = mydb.cursor()
         mycursor.execute("SELECT * FROM habitacion")
@@ -33,7 +47,7 @@ def ventanaMostrarRes():
 #Combox 
     combobox = ttk.Combobox(frmRS, state="readonly",justify='center',font=18,height=10,background='#ff6',width=10,)
     combobox.grid(column=2, row=1,padx=20, pady=20,rowspan=2, sticky="nsew")
-    # combobox.bind('<<ComboboxSelected>>',CargarCombox)
+    combobox.bind('<<ComboboxSelected>>',Seleccioncombo)
     CargarCombox()
 
 #Tabla
@@ -43,4 +57,3 @@ def ventanaMostrarRes():
     tabla.heading('dias', text='Dias ocupados')
     tabla.heading('totalR', text='Total Ingreso')
     tabla.grid(row=3,column=0, padx=0, pady=0,columnspan=4)
-   
