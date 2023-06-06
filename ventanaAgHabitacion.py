@@ -1,44 +1,143 @@
 import tkinter as tk
-from tkinter import *
 from tkinter import ttk
-
+import customtkinter
 import mysql.connector
 
+root_tk = tk.Tk()
+root_tk.geometry("1220x720")
+root_tk.title("Agregar habitacion")
 
+print("Ingreso en la funcion de agregar tipo de habitacion")
+
+datos = {}
 mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="hoteles"
-        )
-# def ventanasecundaria():
-def buttonGuardar_function():
-    print("Entro en funcion guardar")
-    #     mycursor= mydb.cursor()
-    #     nacionalidad=cajaNacionalidad.get()
-    #     sql="INSERT INTO datos(nacionalidad) values (%s)"
-    #     val=(nacionalidad,)
-    #     mycursor.execute(sql,val)
-    #     # mydb.commit()
-    #     # print(mycursor.rowcount," fila insertada a Nueva nacionalidad")
-    #     mycursor = mydb.cursor()
-    #     filas = mycursor.fetchall()
-    #     for fila in filas:
-    #         tabla.insert("", tk.END, values=fila)
-frm2 = tk.Toplevel()
-frm2.grid()
-    
-LabelTipoHabitacion=ttk.Label(frm2, text="Tipo Habitacion").grid(column=2, row=1)
-cajaTipoHabitacion=ttk.Entry(frm2, text="")
+        host="localhost",
+        user="root",
+        password="",
+        database="hoteles"
+)
+
+mycursor = mydb.cursor()
+
+def on_key_typed(event):
+        for i in tree.get_children():
+            tree.delete(i)
+        tecla = event.char
+        tecla_presionada = cajaTipoHabitacion.get()
+        tecla_presionada = tecla_presionada + tecla
+        print("tecla: ", tecla_presionada)
+        # cargar_tabla(tecla_presionada,
+        #     "SELECT id_habitacion,tipo,costo FROM habitacion WHERE tipo LIKE")
+        cargar_tabla()
+
+
+def on_key_typed_2(event):
+        for i in tree.get_children():
+            tree.delete(i)
+        tecla = event.char
+        tecla_presionada = cajaTipoHabitacion.get()
+        tecla_presionada = tecla_presionada + tecla
+        print("tecla: ", tecla_presionada)
+        # cargar_tabla(tecla_presionada,
+        #     "SELECT id_habitacion,tipo,costo FROM habitacion WHERE tipo LIKE")
+        cargar_tabla()
+
+
+def function_guardar():
+        tipoHabitacion = str(cajaTipoHabitacion.get())
+        costo = int(cajaCosto.get())
+        if tipoHabitacion != '' and costo>0:
+            mycursor.execute("INSERT INTO habitacion (tipo,costo) VALUES(%s,%s)",
+                            (tipoHabitacion, costo))
+            mydb.commit()
+            print("Guardado exitosamente")
+            for i in tree.get_children():
+                tree.delete(i)
+            cargar_tabla()
+        else: 
+            print("Datos incompletos")
+
+def function_limpiar():
+        cajaTipoHabitacion.delete(0, tk.END)
+        cajaCosto.delete(0, tk.END)
+
+
+def function_borrar():
+        tipoHabitacion = str(cajaTipoHabitacion.get())
+        mycursor.execute("DELETE FROM habitacion WHERE tipo = %s", [tipoHabitacion])
+        mydb.commit()
+        print("Borrado")
+        for i in tree.get_children():
+            tree.delete(i)
+        cargar_tabla()
+#Falta agregar el boton de editar y probar este
+# def function_editar():
+#         tipoHabitacion = str(cajaTipoHabitacion.get())
+#         costo = int(cajaCosto.get())
+#         mycursor.execute("UPDATE habitacion SET [tipo]= %s ,[costo]= %s WHERE tipo= %s",[tipoHabitacion,costo,tipoHabitacion])
+#         mydb.commit()
+#         print("Editado")
+#         for i in tree.get_children():
+#             tree.delete(i)
+#         cargar_tabla()
+
+
+# def cargar_combo():
+#         mycursor.execute("SELECT tipo,costo FROM habitacion")
+#         filas = mycursor.fetchall()
+
+#         for fila in filas:
+#             llave = str(fila[1])+str(fila[0])
+#             valor = fila[1]
+#             datos[llave] = valor
+#             combobox['values'] = list(datos.keys())
+
+# def cargar_tabla(tecla, sql):
+#     mycursor.execute(sql+"%s", ['%'+tecla+'%'])
+#     filas = mycursor.fetchall()
+#     for fila in filas:
+#         tree.insert("", tk.END, values=(
+#             fila[0], fila[1], fila[2], fila[3], fila[4], fila[5]))
+def cargar_tabla():
+        sql="SELECT id_habitacion,tipo,costo FROM habitacion"
+        mycursor.execute(sql)
+        filas = mycursor.fetchall()
+        for fila in filas:
+            tree.insert("", tk.END, values=(
+                fila))
+# frm2 = tk.Toplevel()
+# frm2.grid()
+
+LabelTipoHabitacion=ttk.Label(root_tk, text="Tipo Habitacion").grid(column=2, row=1)
+cajaTipoHabitacion=ttk.Entry(root_tk, text="")
 cajaTipoHabitacion.grid(column=2, row=2,padx=20, pady=20, sticky="nsew")
-LabelCosto=ttk.Label(frm2, text="Costo").grid(column=2, row=1)
-cajaCosto=ttk.Entry(frm2, text="Costo")
+LabelCosto=ttk.Label(root_tk, text="Costo").grid(column=2, row=3)
+cajaCosto=ttk.Entry(root_tk, text="Costo")
 cajaCosto.grid(column=2, row=4,padx=20, pady=20, sticky="nsew")
-ttk.Button(frm2, text="Guardar",command= buttonGuardar_function).grid(column=2, row=5,padx=20, pady=20, sticky="nsew")
+cajaCosto.insert(0, '0')
+buttonLimpiar = customtkinter.CTkButton(
+    master=root_tk, corner_radius=10, text="Limpiar", command=function_limpiar)
+buttonLimpiar.grid(column=0, row=5, sticky="nsew")
+buttonGuardar = customtkinter.CTkButton(
+    master=root_tk, corner_radius=10, text="Guardar", command=function_guardar)
+buttonGuardar.grid(column=1, row=5, sticky="nsew")
+buttonBorrar = customtkinter.CTkButton(
+    master=root_tk, corner_radius=10, text="Borrar", command=function_borrar)
+buttonBorrar.grid(column=2, row=5, sticky="nsew")
+buttonSalir = customtkinter.CTkButton(
+    master=root_tk, corner_radius=10, text="Salir", command=root_tk.destroy)
+buttonSalir.grid(column=3, row=5, sticky="nsew")
 
 
-    # columns = ('nacionalidad')
-    # tabla = ttk.Treeview(frm2, columns=columns, show='headings')
-    # tabla.heading('nacionalidad', text='Nacionalidad')
+columns = ('Id_habitacion', 'Tipo de habitacion', 'Costo',)
+tree = ttk.Treeview(root_tk, columns=columns, show='headings')
+tree.heading('Id_habitacion', text='id_habitacion')
+tree.heading('Tipo de habitacion', text='Tipo')
+tree.heading('Costo', text='Costo')
+tree.grid(row=6, column=0, columnspan=6, padx=10, rowspan=4, sticky="nsew")
 
-#tabla.grid(row=5,column=5, columnspan=2,padx=10, rowspan=8,pady=10, sticky="nsew")
+# cargar_tabla(
+#     '', "SELECT id_habitacion,tipo,costo FROM habitacion WHERE tipo LIKE")
+cargar_tabla()
+
+root_tk.mainloop()
