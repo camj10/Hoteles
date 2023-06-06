@@ -23,6 +23,8 @@ def ventanaMostrarRes():
         filas=mycursor.fetchall()
         totald=0
         totali=0
+        for row in tabla.get_children():
+            tabla.delete(row)
         for fila in filas:
             totald=totald+fila[1]
             totali=totali+fila[0]
