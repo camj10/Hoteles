@@ -19,13 +19,22 @@ def ventanaReserva():
     frmRES.grid()
     
 #---------------------------------------------Declaracion de funciones--------------------------------------------
+    def finalizar():
+        curItem = tablaGeneral.focus()
+        seleccionado=tablaGeneral.item(curItem)
+        cod=seleccionado['values'][0]
+        mycursor = mydb.cursor()
+        sql = "UPDATE reserva SET estado=1 WHERE id_reserva=%s"
+        mycursor.execute(sql,[cod])
+        mydb.commit()
+        cargaBase()
+
     def FinalizarEsta(numr):
         mycursor = mydb.cursor()
         mycursor.execute("SELECT id_reserva,numero_reserva FROM reserva WHERE estado=0")
         filas = mycursor.fetchall()
         bandera=False
         ind=0
-        print(filas)
         for fila in filas:
             if(fila[1]==numr):
                 bandera=True
@@ -44,7 +53,6 @@ def ventanaReserva():
         cod=seleccionado['values'][0]
         dias=int(EntryDias.get())
         descuento=seleccionado['values'][6]
-        print(descuento)
         if(dias>10):
             descuento=descuento+2
         elif(descuento=='5' and dias<5):
@@ -83,7 +91,6 @@ def ventanaReserva():
             descuento=0.1
         if(dias>10):
             descuento=descuento+0.02
-        print(subtotal,int(descuento*100.0))
         sql = 'INSERT INTO reserva(`numero_reserva`, `tipo`, `costo`, `dias`, `subtotal`, `porcentaje_descuento`, `total`,tipo_pago) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)'
         val = [numr,seleccionado['values'][0],seleccionado['values'][1],dias,subtotal,int(descuento*100.0),((seleccionado['values'][1]*dias)-descuento),option]
         mycursor = mydb.cursor()
@@ -149,7 +156,7 @@ def ventanaReserva():
 
     ttk.Button(frmRES, text="Cargar", command=cargarReser).grid(column=0, row=6,padx=10, pady=20, sticky="nsew")
     ttk.Button(frmRES, text="Modificar",command=actualizar).grid(column=1, row=6,padx=10, pady=20, sticky="nsew")
-    ttk.Button(frmRES, text="Elimirar").grid(column=0, row=7,padx=50, pady=20, sticky="nsew",columnspan=2)
+    ttk.Button(frmRES, text="Finalizar",command=finalizar).grid(column=0, row=7,padx=50, pady=20, sticky="nsew",columnspan=2)
 
 
 # Tabla General de reservas

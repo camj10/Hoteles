@@ -18,17 +18,14 @@ def ventanaMostrarRes():
     frmRS.grid()
 #Funciones de la ventana
     def Seleccioncombo(event):
-        print(combobox.get())
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT costo,dias FROM reserva WHERE tipo=%s AND estado=1",[combobox.get()])
+        mycursor.execute("SELECT total,dias FROM reserva WHERE tipo=%s AND estado=1",[combobox.get()])
         filas=mycursor.fetchall()
         totald=0
         totali=0
-        print(filas)
         for fila in filas:
             totald=totald+fila[1]
             totali=totali+fila[0]
-        print(totali,totald)
         tabla.insert("",tk.END,values=(combobox.get(),totald,totali))
 
     def CargarCombox():
@@ -52,7 +49,7 @@ def ventanaMostrarRes():
 
 #Tabla
     columns = ('tipo', 'dias','totalR')
-    tabla = ttk.Treeview(frmRS, columns=columns, show='headings',cursor="circle")
+    tabla = ttk.Treeview(frmRS, columns=columns, show='headings')
     tabla.heading('tipo', text='Tipo de habitacion ')
     tabla.heading('dias', text='Dias ocupados')
     tabla.heading('totalR', text='Total Ingreso')
