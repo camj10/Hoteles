@@ -11,14 +11,45 @@ mydb = mysql.connector.connect(
             database="hoteles"
         )
 #Declaracion de variables para el combox
-sel={}
+
 
 
 def ventanaReserva():
     frmRES = tk.Toplevel(border=2,padx=15,pady=15)
     frmRES.grid()
+    
 #---------------------------------------------Declaracion de funciones--------------------------------------------
-    # def cargarReser():
+    def cargaBase():
+        mycursor = mydb.cursor()
+        mycursor.execute("numero_reserva,tipo	,costo	,dias,subtotal,porcentaje_descuento	,total	estado	 FROM ")
+        'numero', 'tipo', 'costo','subtotal','descuento','total'
+        filas = mycursor.fetchall()
+        for row in tablaGeneral.get_children():
+            tablaGeneral.delete(row)
+        for fila in filas:
+            tablaGeneral.insert("", tk.END, values=fila)
+
+    def cargarReser():
+        numr=int(EntryNro.get())
+        dias=int(EntryDias.get())
+        option=genderVar.get()
+        descuento=0.0
+        curItem = tablaHa.focus()
+        seleccionado=tablaHa.item(curItem)
+        subtotal=(seleccionado['values'][1]*dias)
+        if(option=='1' and   dias>5):
+            descuento=0.05
+        elif(option=='2'):
+            descuento=0.1
+        if(dias>10):
+            descuento=descuento+0.02
+        print(subtotal,int(descuento*100.0))
+        sql = 'INSERT INTO reserva( `numero_reserva`, `tipo`, `costo`, `dias`, `subtotal`, `porcentaje_descuento`, `total`) VALUES(%s,%s,%s,%s,%s,%s,%s)'
+        val = [numr,seleccionado['values'][0],seleccionado['values'][1],dias,subtotal,int(descuento*100.0),((seleccionado['values'][1]*dias)-descuento)]
+        mycursor = mydb.cursor()
+        mycursor.execute(sql,val)
+        mydb.commit()
+        
 
     
     def cargaTablaTipo():
@@ -69,21 +100,28 @@ def ventanaReserva():
 
 #Botones Borrar, Modificar y Cargar
 
-    ttk.Button(frmRES, text="Cargar").grid(column=0, row=6,padx=10, pady=20, sticky="nsew")
+    ttk.Button(frmRES, text="Cargar", command=cargarReser).grid(column=0, row=6,padx=10, pady=20, sticky="nsew")
     ttk.Button(frmRES, text="Modificar").grid(column=1, row=6,padx=10, pady=20, sticky="nsew")
     ttk.Button(frmRES, text="Elimirar").grid(column=0, row=7,padx=50, pady=20, sticky="nsew",columnspan=2)
 
 
 # Tabla General de reservas
     columns = ('numero', 'tipo', 'costo','subtotal','descuento','total')
-    tablaGeneral = ttk.Treeview(frmRES, columns=columns, show='headings',xscrollcommand=TRUE)
+    tablaGeneral = ttk.Treeview(frmRES, columns=columns, show='headings')
     tablaGeneral.heading('numero', text='Nro habitacion')
     tablaGeneral.heading('tipo', text='Tipo de habitacion')
     tablaGeneral.heading('subtotal', text='Sub-Totales')
-    tablaGeneral.heading('descuento', text='% Descuento')
+    tablaGeneral.heading('descuento', text='Descuento')
     tablaGeneral.heading('costo', text='Costo')
+    tablaGeneral.heading('total', text='Total')
+
     tablaGeneral.grid(row=0,column=2, padx=0, pady=0,columnspan=5,rowspan=3)
+
+    tablaGeneral.column('numero', width=120)
+    tablaGeneral.column('tipo', width=120)
+    tablaGeneral.column('subtotal', width=120)
 
 
 #--------------------------------------llamado a funciones iniciales------------------------------------------
     cargaTablaTipo()
+    cargaBase()
