@@ -83,7 +83,7 @@ def ventanasecundaria():
             for fila in filas:
                 tree.insert("", tk.END, values=(
                     fila))
-
+    ttk.Label(root_tk, text="Resumenes",font=('Helvetica bold',34)).grid(column=2, row=0)
     LabelTipoHabitacion=ttk.Label(root_tk, text="Tipo Habitacion").grid(column=2, row=1)
     cajaTipoHabitacion=ttk.Entry(root_tk, text="")
     cajaTipoHabitacion.grid(column=2, row=2,padx=20, pady=20, sticky="nsew")
