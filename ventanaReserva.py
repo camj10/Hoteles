@@ -19,18 +19,58 @@ def ventanaReserva():
     frmRES.grid()
     
 #---------------------------------------------Declaracion de funciones--------------------------------------------
+    def FinalizarEsta(numr):
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT id_reserva,numero_reserva FROM reserva WHERE estado=0")
+        filas = mycursor.fetchall()
+        bandera=False
+        ind=0
+        print(filas)
+        for fila in filas:
+            if(fila[1]==numr):
+                bandera=True
+                ind=fila[0]
+        if(bandera):
+            mycursor = mydb.cursor()
+            sql = "UPDATE reserva SET estado=1 WHERE id_reserva=%s"
+            mycursor.execute(sql,[ind])
+            mydb.commit()
+        return
+        
+        
+    def actualizar():
+        curItem = tablaGeneral.focus()
+        seleccionado=tablaGeneral.item(curItem)
+        cod=seleccionado['values'][0]
+        dias=int(EntryDias.get())
+        descuento=seleccionado['values'][6]
+        print(descuento)
+        if(dias>10):
+            descuento=descuento+2
+        elif(descuento=='5' and dias<5):
+            descuento=0
+        subtotal=dias*seleccionado['values'][3]
+        
+        mycursor = mydb.cursor()
+        sql = "UPDATE reserva SET dias=%s,subtotal=%s,porcentaje_descuento=%s,total=%sWHERE id_reserva=%s"
+        value=[dias,subtotal,descuento,(subtotal-(subtotal*(descuento/100))),cod]
+        mycursor.execute(sql,value)
+        mydb.commit()
+        cargaBase()
+
     def cargaBase():
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT  FROM reserva WHERE estado=0")
+        mycursor.execute("SELECT id_reserva,numero_reserva,tipo,costo,dias,subtotal,porcentaje_descuento,total,tipo_pago FROM reserva WHERE estado=0")
         
         filas = mycursor.fetchall()
         for row in tablaGeneral.get_children():
             tablaGeneral.delete(row)
         for fila in filas:
-            tablaGeneral.insert("", tk.END, values=[fila[0],fila[1],fila[2],fila[3],fila[4],fila[5],fila[6],fila[7]])
+            tablaGeneral.insert("", tk.END, values=fila)
 
     def cargarReser():
         numr=int(EntryNro.get())
+        FinalizarEsta(numr)
         dias=int(EntryDias.get())
         option=genderVar.get()
         descuento=0.0
@@ -44,11 +84,12 @@ def ventanaReserva():
         if(dias>10):
             descuento=descuento+0.02
         print(subtotal,int(descuento*100.0))
-        sql = 'INSERT INTO reserva( `numero_reserva`, `tipo`, `costo`, `dias`, `subtotal`, `porcentaje_descuento`, `total`,tipo_pago) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)'
-        val = [numr,seleccionado['values'][0],seleccionado['values'][1],dias,subtotal,int(descuento*100.0),((seleccionado['values'][1]*dias)-descuento)]
+        sql = 'INSERT INTO reserva(`numero_reserva`, `tipo`, `costo`, `dias`, `subtotal`, `porcentaje_descuento`, `total`,tipo_pago) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)'
+        val = [numr,seleccionado['values'][0],seleccionado['values'][1],dias,subtotal,int(descuento*100.0),((seleccionado['values'][1]*dias)-descuento),option]
         mycursor = mydb.cursor()
         mycursor.execute(sql,val)
         mydb.commit()
+        cargaBase()
         
 
     
@@ -63,12 +104,14 @@ def ventanaReserva():
             tablaHa.insert("", tk.END, values=fila)
 
     def cargaSeleccion(element):
-        curItem = tablaGeneral.focus()
-        seleccionado=tablaGeneral.item(curItem)
-        print(seleccionado['values'])
-        EntryNro.delete(0, tk.END)
-        EntryDias.delete(0, tk.END)
-        EntryDias.insert(0,seleccionado['values'][3])
+        curItem1 = tablaGeneral.focus()
+        seleccionado1=tablaGeneral.item(curItem1)
+        print(seleccionado1['values'])
+        if(seleccionado1['values']):
+            EntryNro.delete(0, tk.END)
+            EntryDias.delete(0, tk.END)
+            EntryDias.insert(0,seleccionado1['values'][4])
+        else:EntryDias.delete(0, tk.END)
 
 
 
@@ -105,7 +148,7 @@ def ventanaReserva():
 #Botones Borrar, Modificar y Cargar
 
     ttk.Button(frmRES, text="Cargar", command=cargarReser).grid(column=0, row=6,padx=10, pady=20, sticky="nsew")
-    ttk.Button(frmRES, text="Modificar").grid(column=1, row=6,padx=10, pady=20, sticky="nsew")
+    ttk.Button(frmRES, text="Modificar",command=actualizar).grid(column=1, row=6,padx=10, pady=20, sticky="nsew")
     ttk.Button(frmRES, text="Elimirar").grid(column=0, row=7,padx=50, pady=20, sticky="nsew",columnspan=2)
 
 
