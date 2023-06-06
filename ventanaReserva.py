@@ -12,11 +12,32 @@ mydb = mysql.connector.connect(
         )
 #Declaracion de variables para el combox
 sel={}
-seleccionado=0
+
 
 def ventanaReserva():
     frmRES = tk.Toplevel(border=2,padx=15,pady=15)
     frmRES.grid()
+#---------------------------------------------Declaracion de funciones--------------------------------------------
+    # def cargarReser():
+
+    
+    def cargaTablaTipo():
+        mycursor = mydb.cursor()
+        #falta cambiar el select por un select like
+        mycursor.execute("SELECT tipo,costo FROM habitacion")
+        filas = mycursor.fetchall()
+        for row in tablaHa.get_children():
+            tablaHa.delete(row)
+        for fila in filas:
+            tablaHa.insert("", tk.END, values=fila)
+
+    def cargaSeleccion(element):
+        curItem = tablaHa.focus()
+        seleccionado=tablaHa.item(curItem)
+
+
+#---------------------------------------------Parte visual--------------------------------------------------------
+
 
 #Primera fila Agregar el numero de havitacion    
     ttk.Label(frmRES, text="Nro Habitacion:").grid(column=0, row=0)
@@ -29,6 +50,7 @@ def ventanaReserva():
     tablaHa.heading('tipo', text='Tipo de habitacion ')
     tablaHa.heading('costo', text='Costo')
     tablaHa.grid(row=2,column=0, padx=0, pady=0,columnspan=2)
+    tablaHa.bind('<<TreeviewSelect>>',cargaSeleccion)
 
 #Tercera fila Dias de estadia
     ttk.Label(frmRES, text="Dias de estadia:").grid(column=0, row=3)
@@ -60,4 +82,8 @@ def ventanaReserva():
     tablaGeneral.heading('subtotal', text='Sub-Totales')
     tablaGeneral.heading('descuento', text='% Descuento')
     tablaGeneral.heading('costo', text='Costo')
-    tablaGeneral.grid(row=0,column=2, padx=0, pady=0,columnspan=5,rowspan=3,)
+    tablaGeneral.grid(row=0,column=2, padx=0, pady=0,columnspan=5,rowspan=3)
+
+
+#--------------------------------------llamado a funciones iniciales------------------------------------------
+    cargaTablaTipo()
