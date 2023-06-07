@@ -1,9 +1,11 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 import customtkinter
 import mysql.connector
+
 def ventanasecundaria():
-    root_tk = tk.Tk()
+    root_tk = tk.Toplevel(border=2,padx=15,pady=15)
     root_tk.geometry("1220x720")
     root_tk.title("Agregar habitacion")
 
@@ -11,61 +13,80 @@ def ventanasecundaria():
 
     datos = {}
     mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="hoteles"
+        host="localhost",
+        user="root",
+        password="",
+        database="hoteles"
     )
 
     mycursor = mydb.cursor()
+    def cargaSeleccion(event):
+        curItem = tree.focus()
+        seleccionado=tree.item(curItem)
+        print(seleccionado)
+        if(seleccionado['values']):
+            cajaTipoHabitacion.delete(0, tk.END) 
+            cajaTipoHabitacion.insert(0,seleccionado['values'][1])
+            cajaCosto.delete(0, tk.END) 
+            cajaCosto.insert(0,seleccionado['values'][2])
+        else:
+            cajaTipoHabitacion.delete(0, tk.END)
+            cajaCosto.delete(0, tk.END) 
+        
 
     def on_key_typed(event):
-            for i in tree.get_children():
-                tree.delete(i)
-            tecla = event.char
-            tecla_presionada = cajaTipoHabitacion.get()
-            tecla_presionada = tecla_presionada + tecla
-            print("tecla: ", tecla_presionada)
-            cargar_tabla()
+        for i in tree.get_children():
+            tree.delete(i)
+        tecla = event.char
+        tecla_presionada = cajaTipoHabitacion.get()
+        tecla_presionada = tecla_presionada + tecla
+        print("tecla: ", tecla_presionada)
+        cargar_tabla()
 
 
     def on_key_typed_2(event):
-            for i in tree.get_children():
-                tree.delete(i)
-            tecla = event.char
-            tecla_presionada = cajaTipoHabitacion.get()
-            tecla_presionada = tecla_presionada + tecla
-            print("tecla: ", tecla_presionada)
-            cargar_tabla()
+        for i in tree.get_children():
+            tree.delete(i)
+        tecla = event.char
+        tecla_presionada = cajaTipoHabitacion.get()
+        tecla_presionada = tecla_presionada + tecla
+        print("tecla: ", tecla_presionada)
+        cargar_tabla()
 
 
     def function_guardar():
-            tipoHabitacion = str(cajaTipoHabitacion.get())
-            costo = int(cajaCosto.get())
-            if tipoHabitacion != '' and costo>0:
-                mycursor.execute("INSERT INTO habitacion (tipo,costo) VALUES(%s,%s)",
-                                (tipoHabitacion, costo))
-                mydb.commit()
-                print("Guardado exitosamente")
-                for i in tree.get_children():
-                    tree.delete(i)
-                cargar_tabla()
-            else: 
-                print("Datos incompletos")
-
-    def function_limpiar():
-            cajaTipoHabitacion.delete(0, tk.END)
-            cajaCosto.delete(0, tk.END)
-
-
-    def function_borrar():
-            tipoHabitacion = str(cajaTipoHabitacion.get())
-            mycursor.execute("DELETE FROM habitacion WHERE tipo = %s", [tipoHabitacion])
+        tipoHabitacion = str(cajaTipoHabitacion.get())
+        costo = int(cajaCosto.get())
+        if tipoHabitacion != '' and costo>0:
+            mycursor.execute("INSERT INTO habitacion (tipo,costo) VALUES(%s,%s)",
+                            (tipoHabitacion, costo))
             mydb.commit()
-            print("Borrado")
+            print("Guardado exitosamente")
             for i in tree.get_children():
                 tree.delete(i)
             cargar_tabla()
+        else: 
+            print("Datos incompletos")
+
+    def function_limpiar():
+        mycursor = mydb.cursor()
+        sql = "UPDATE  habitacion SET costo=%s,tipo=%s WHERE tipo=%s"
+        value=[cajaCosto.get(),cajaTipoHabitacion.get(),cajaTipoHabitacion.get()]
+        mycursor.execute(sql,value)
+        mydb.commit()
+        for i in tree.get_children():
+                tree.delete(i)
+        cargar_tabla()
+
+
+    def function_borrar():
+        tipoHabitacion = str(cajaTipoHabitacion.get())
+        mycursor.execute("DELETE FROM habitacion WHERE tipo = %s", [tipoHabitacion])
+        mydb.commit()
+        print("Borrado")
+        for i in tree.get_children():
+            tree.delete(i)
+        cargar_tabla()
     #Falta agregar el boton de editar y probar este
     # def function_editar():
     #         tipoHabitacion = str(cajaTipoHabitacion.get())
@@ -77,12 +98,12 @@ def ventanasecundaria():
     #             tree.delete(i)
     #         cargar_tabla()
     def cargar_tabla():
-            sql="SELECT id_habitacion,tipo,costo FROM habitacion"
-            mycursor.execute(sql)
-            filas = mycursor.fetchall()
-            for fila in filas:
-                tree.insert("", tk.END, values=(
-                    fila))
+        sql="SELECT id_habitacion,tipo,costo FROM habitacion"
+        mycursor.execute(sql)
+        filas = mycursor.fetchall()
+        for fila in filas:
+            tree.insert("", tk.END, values=(
+                fila))
     ttk.Label(root_tk, text="Resumenes",font=('Helvetica bold',34)).grid(column=2, row=0)
     LabelTipoHabitacion=ttk.Label(root_tk, text="Tipo Habitacion").grid(column=2, row=1)
     cajaTipoHabitacion=ttk.Entry(root_tk, text="")
@@ -92,7 +113,7 @@ def ventanasecundaria():
     cajaCosto.grid(column=2, row=4,padx=20, pady=20, sticky="nsew")
     cajaCosto.insert(0, '0')
     buttonLimpiar = customtkinter.CTkButton(
-        master=root_tk, corner_radius=10, text="Limpiar", command=function_limpiar)
+        master=root_tk, corner_radius=10, text="Actulizar", command=function_limpiar)
     buttonLimpiar.grid(column=0, row=5, sticky="nsew")
     buttonGuardar = customtkinter.CTkButton(
         master=root_tk, corner_radius=10, text="Guardar", command=function_guardar)
@@ -111,6 +132,7 @@ def ventanasecundaria():
     tree.heading('Tipo de habitacion', text='Tipo')
     tree.heading('Costo', text='Costo')
     tree.grid(row=6, column=0, columnspan=6, padx=10, rowspan=4, sticky="nsew")
+    tree.bind('<<TreeviewSelect>>',cargaSeleccion)
 
     cargar_tabla()
 
